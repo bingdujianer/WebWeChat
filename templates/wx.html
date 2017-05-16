@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <meta charset="UTF-8">
+    <title>Web | WeChat</title>
+    <link rel="stylesheet" href="{% static 'css/wx.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap/css/bootstrap.css' %}">
+</head>
+<body>
+    <div id="content">
+        <div class="login-box">
+            <div>
+                <img id='avatar' class="img" src="https://login.weixin.qq.com/qrcode/{{ code_url }}==">
+            </div>
+        </div>
+    </div>
+
+    <div id='main' class="hide">
+        <div class="main-inner">
+            <!-- 左侧最近联系人 -->
+            <div class="panel">
+                <div class="header">
+                    <h4 id="currentUser">当前登陆人</h4>
+                </div>
+                <div class="tab">
+                    <div class="tab_item">
+                        <a class="newly">最近</a>
+                    </div>
+                    <div class="tab_item">
+                        <a class="groups">公众号</a>
+                    </div>
+                    <div class="tab_item">
+                        <a class="all">所有</a>
+                    </div>
+                </div>
+                <div class="nav-view ng-scope">
+                    <ul id='newly' class="list-group"></ul>
+                    <ul id='groups' class="list-group hide"></ul>
+                    <ul id='all' class="list-group hide"></ul>
+                </div>
+            </div>
+            <div id="chatArea">
+                <div class="box-hd">
+                    <p id="current_contact"></p>
+                </div>
+                <div class="box-bd">
+                    <h2 style="text-align: center;line-height: 400px">暂未选择聊天</h2>
+                </div>
+                <div class="box-ft hide">
+                    <textarea id="editArea"></textarea>
+                    <div class="action">
+                        <span class="ng-scope">按下Enter发送</span>
+                        <a id='btn_send' class="btn btn_send">发送</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'plugins/bootstrap/js/bootstrap.js' %}"></script>
+    <script src="/static/js/jquery-3.1.1.js"></script>
+    <script>
+        $(function () {
+            bindLongPolling();
+            bindContact();
+            bindSendMsg();
+            bindTabItem();
+        });
+
+        /*
+         *  建立长轮询, 实时监听扫码及确认登陆
+         */
+        function bindLongPolling() {
+            $.ajax({
+                url: '/wx-login/',
+                type: 'GET',
+                success: function (response) {
+                    response = JSON.parse(response);
+                    if(response.status === '408'){
+                        console.log(response.status);
+                        bindLongPolling();
+                    }else if(response.status === '201'){
+                        $('#avatar').attr('src', response.data);
+                        bindLongPolling();
+                    }else if(response.status === '200'){
+                        var content = $('#content');
+                        content.empty();
+                        $('#main').removeClass('hide');
+                        // 初始化个人信息及联系人信息
+                        initContacts(response.data.user_info);
+                        initAllMemberList(response.data.user_contact_list);
+                        pushLongPolling();
+                    }
+                }
+            })
+        }
+        /*
+         *  建立实时监听消息返回的长轮询
+         */
+        function pushLongPolling() {
+            $.ajax({
+                url: '/wx-push/',
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (response) {
+                    console.log(response);
+                    pushLongPolling();
+                }
+            })
+        }
+        /*
+         *  初始化登陆信息
+         */
+        function initContacts(userInfo) {
+            // 获取当前用户登陆名称并变更
+            $('#currentUser').attr(
+                'currentUserName', userInfo['User']['UserName']
+            ).text(userInfo['User']['NickName']);
+            // 生成左侧最近联系人, 且默认显示最近联系人
+            $('.tab_item a.newly').parent().addClass('active');
+            $.each(userInfo['ContactList'], function (key, newlyContact) {
+                // 创建li标签 并添加特殊标识username
+                var ContactLi = document.createElement('li');
+                $(ContactLi).attr(
+                    {
+                        'username': newlyContact['UserName'],
+                        'class': 'list-group-item'
+                    }
+                ).html(newlyContact['RemarkName'] || newlyContact['NickName']);
+                $('#newly').append(ContactLi);
+            })
+        }
+        /*
+         *  初始化所有联系人
+         */
+        function initAllMemberList(allContacts) {
+            console.log(allContacts);
+            $.each(allContacts['MemberList'], function (key, value) {
+                var contactLi = document.createElement('li');
+                $(contactLi).attr(
+                    {
+                        'username': value['UserName'],
+                        'class': 'list-group-item'
+                    }
+                ).html(value['RemarkName'] || value['NickName']);
+                $('#all').append(contactLi);
+            })
+        }
+        /*
+         *  菜单切换
+         */
+        function bindTabItem() {
+            $('div.tab .tab_item').click(function () {
+                // 菜单切换 高亮
+                $(this).addClass('active').siblings().removeClass('active');
+                var ulClassName = $(this).find('a').first().attr('class');
+                $('#' + ulClassName).removeClass('hide').siblings().addClass('hide');
+
+            })
+        }
+        /*
+         *  为未来出现的联系人的li标签绑定点击时间, 并生成聊天框
+         */
+        function bindContact() {
+            $('#newly,#groups,#all').delegate('li', 'click', function () {
+                var chatArea = $('#chatArea');
+                chatArea.find('.box-ft').removeClass('hide');
+                chatArea.find('.box-bd').empty();
+                var clickContact = $(this).text();
+                var userName = $(this).attr('username');
+                $('#current_contact').attr('username', userName).html(clickContact);
+            })
+        }
+        /*
+         *  监听键盘Enter或按钮发送事件
+         */
+        function bindSendMsg() {
+            // document.onkeydown = BtnSendMsg;
+
+            $('#btn_send').bind('click', BtnShowPanelMsg);
+        }
+        /*
+         *  将当前消息显示在面板
+         */
+        function BtnShowPanelMsg() {
+            var TextArea = $('#editArea');
+            var CurrentTime = new Date();
+            var Content = TextArea.val().trim();
+            var ToUserName = $('#current_contact').attr('username');
+            var FromUserName = $('#currentUser').attr('currentUserName');
+            var chatContent = document.createElement('div');
+            $(chatContent).attr('class', 'chat-content').html(
+                '<div>'+ CurrentTime.toLocaleString() +'</div>' +
+                '<div>'+ Content +'</div>'
+            );
+            $('.box-bd').append(chatContent);
+            BtnSendMsg(Content, ToUserName, FromUserName);
+            // 清空输入框
+            TextArea.val('');
+        }
+        /*
+         *  提交数据到Django
+         */
+        function BtnSendMsg(Content, ToUserName, FromUserName) {
+            // 构建数据字典
+            var sendData = {
+                'Content': Content,
+                'FromUserName': FromUserName,
+                'ToUserName': ToUserName
+            };
+
+            $.ajax({
+                url: '/wx-login/',
+                type: 'POST',
+                data: sendData,
+                success: function (response) {
+                    console.log(response);
+                }
+            })
+        }
+    </script>
+</body>
+</html>

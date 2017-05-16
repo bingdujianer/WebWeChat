@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <meta charset="UTF-8">
+    <title>WeChat</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/wx.css' %}">
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="main-inner">
+            <!-- 左侧最近联系人 -->
+            <div class="panel">
+                <div class="header">
+                    <h4 id="currentUser">当前登陆人</h4>
+                </div>
+                <div class="tab">
+                    <div class="tab_item active">
+                        <a class="chat">
+                            最近
+                        </a>
+                    </div>
+                    <div class="tab_item">
+                        <a class="chat">
+                            群组
+                        </a>
+                    </div>
+                    <div class="tab_item">
+                        <a class="chat">
+                            所有
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div id="chatArea">
+                <div class="box-hd">
+                    <p id="current_">正在与 XX 聊天中...</p>
+                </div>
+                <div class="box-bd">
+{#                    <h2 style="text-align: center;line-height: 400px">暂未选择聊天</h2>#}
+                    <div class="chat-content">
+                        <div class="content-item">
+                            <div>2017-8-9 17:59</div>
+                            <div>顺利打开附件是看了福建省电力</div>
+                        </div>
+                    </div>
+                    <div class="chat-content">
+                        <div class="content-item">
+                            <div>2017-8-9 17:59</div>
+                            <div>顺利打开附件是看了福建省电力</div>
+                        </div>
+                    </div>
+                    <div class="chat-content">
+                        <div class="content-item">
+                            <div>2017-8-9 17:59</div>
+                            <div>随时离开房间圣诞快乐房价</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-ft">
+                    <textarea id="editArea"></textarea>
+                    <div class="action">
+                        <span class="ng-scope">按下Enter发送</span>
+                        <a id='xx' class="btn btn_send">发送</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'plugins/bootstrap/js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/jquery-3.1.1.js' %}"></script>
+    <script>
+        $('#xx').keydown(function (ele) {
+            if (ele.which == '13'){
+                alert(1)
+            }
+        });
+
+
+        //输入框的enter事件
+        $('#btn').bind('keydown', function(event){
+            if(event.which == 13) {
+                alert(1111);
+            }
+        });
+
+        document.onkeydown=keyDownSearch;
+
+        function keyDownSearch(e) {
+            // 兼容FF和IE和Opera
+            var theEvent = e || window.event;
+            var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+            if (code == 13) {
+                alert('回车');//具体处理函数
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
