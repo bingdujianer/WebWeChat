@@ -5,12 +5,13 @@
 
     API 	获取 UUID
     url 	https://login.weixin.qq.com/jslogin
-    method 	GET
-    data 	URL Encode
-    params 	appid: 应用ID
-    fun: new 应用类型
-    lang: zh_CN 语言
-    _: 时间戳
+    params
+        method 	       GET
+        appid:         应用ID
+        redirect_uri   上次访问的url
+        fun:           new 应用类型
+        lang:          zh_CN 语言
+        _:             时间戳
 
 
 
