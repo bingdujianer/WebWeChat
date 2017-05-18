@@ -15,6 +15,7 @@
         
     返回数据格式
     window.QRLogin.code = 200; window.QRLogin.uuid = "xxxx"
+    
+    
  
 
-返回
