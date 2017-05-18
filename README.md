@@ -12,5 +12,9 @@
         fun:           new 应用类型
         lang:          zh_CN 语言
         _:             时间戳
+        
+    返回数据格式
+    window.QRLogin.code = 200; window.QRLogin.uuid = "xxxx"
  
-    
+
+返回
