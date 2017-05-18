@@ -2,6 +2,7 @@
 通过Django程序实现对WeChat接口的请求，可以和微信联系人实现收发消息
 
 登录
+
     API 	获取 UUID
     url 	https://login.weixin.qq.com/jslogin
     method 	GET
