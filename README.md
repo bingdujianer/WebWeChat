@@ -16,6 +16,11 @@
     返回数据格式
     window.QRLogin.code = 200; window.QRLogin.uuid = "xxxx"
     
+    获取二维码
+    API 	生成二维码
+    url 	https://login.weixin.qq.com/l/ uuid
+    
+    
     
  
 
